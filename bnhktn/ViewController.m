@@ -97,6 +97,9 @@
     norepeatFlag = 0;
     socketOpen = NO;
     
+    // Game Start Music
+    [self playSound:@"pac_music_gamestart.wav" loop:0];
+
     // Konashi init
     [Konashi initialize];
 
@@ -107,7 +110,7 @@
             [Konashi pinMode:KonashiDigitalIO0 mode:KonashiPinModeOutput]; // set PIO0 LED
             [Konashi digitalWrite:KonashiDigitalIO0 value:KonashiLevelHigh];
         }
-        [self shortcutBeacon];
+//        [self shortcutBeacon];
     }];
     
     [[Konashi shared] setDigitalInputDidChangeValueHandler:^(KonashiDigitalIOPin pin, int value) {
@@ -546,6 +549,7 @@
         imgView.image = pacmanimg0;
         [self.view insertSubview:imgView atIndex:0];
     }
+    [self playSound:@"pac_se_credit.wav" loop:0];
 }
 
 - (void)readRole2 {
@@ -572,11 +576,14 @@
         // role is pac-man
         [Konashi pinMode:KonashiDigitalIO3 mode:KonashiPinModeOutput]; // set PIO3 Vib
         [Konashi digitalWrite:KonashiDigitalIO3 value:KonashiLevelLow];
+        [self playSound:@"pac_se_eating_fruit.wav" loop:0];
+        [NSThread sleepForTimeInterval:0.5f];
+        [self playSound:@"pac_se_ghost_turn2blue.wav" loop:7];
     } else if (segmentRole.selectedSegmentIndex == 1) {
         // role is monster
         [Konashi pinMode:KonashiDigitalIO3 mode:KonashiPinModeOutput]; // set PIO3 Vib
         [Konashi digitalWrite:KonashiDigitalIO3 value:KonashiLevelHigh];
-        [self playSound:@"lose.mp3"];
+        [self playSound:@"pac_se_ghost_turn2blue.wav" loop:7];
     }
 }
 
@@ -634,20 +641,19 @@
     socketOpen = NO;
 }
 
-- (void)playSound:(NSString *)soundName {
+- (void)playSound:(NSString *)soundName loop:(NSInteger)loop {
     NSString *soundPath = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:soundName];
     NSURL *urlOfSound = [NSURL fileURLWithPath:soundPath];
     AVAudioPlayer *player = [[AVAudioPlayer alloc] initWithContentsOfURL:urlOfSound error:nil];
-    [player setNumberOfLoops:0];
+    [player setNumberOfLoops:loop];
     player.delegate = (id)self;
     [player prepareToPlay];
-    if (_dictPlayers == nil)
-        _dictPlayers = [NSMutableDictionary dictionary];
+    if (_dictPlayers == nil) _dictPlayers = [NSMutableDictionary dictionary];
     [_dictPlayers setObject:player forKey:[[player.url path] lastPathComponent]];
     [player play];
 }
 
--(void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
+- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
     [_dictPlayers removeObjectForKey:[[player.url path] lastPathComponent]];
 }
 

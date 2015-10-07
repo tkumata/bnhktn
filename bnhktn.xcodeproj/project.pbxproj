@@ -26,6 +26,11 @@
 		8937A4971BC5976800BB964D /* lose.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 8937A4961BC5976800BB964D /* lose.mp3 */; };
 		896E8C2A1BBBA05900B89D8A /* 2000px-Pacman.svg.png in Resources */ = {isa = PBXBuildFile; fileRef = 896E8C291BBBA05900B89D8A /* 2000px-Pacman.svg.png */; };
 		896E8C2E1BBBAA6800B89D8A /* monster.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 896E8C2D1BBBAA6800B89D8A /* monster.jpeg */; };
+		8973FECF1BC5CAD4006893DD /* pac_se_ghost_turn2blue.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8973FECE1BC5CAD4006893DD /* pac_se_ghost_turn2blue.wav */; };
+		8973FED11BC5CC0C006893DD /* pac_se_ghost_movesound.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8973FED01BC5CC0C006893DD /* pac_se_ghost_movesound.wav */; };
+		8973FED31BC5D1EE006893DD /* pac_music_gamestart.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8973FED21BC5D1EE006893DD /* pac_music_gamestart.wav */; };
+		8973FED51BC5D34E006893DD /* pac_se_eating_fruit.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8973FED41BC5D34E006893DD /* pac_se_eating_fruit.wav */; };
+		8973FED71BC5D498006893DD /* pac_se_credit.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8973FED61BC5D498006893DD /* pac_se_credit.wav */; };
 		897505101BC3173C00026E1F /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8975050F1BC3173C00026E1F /* AVFoundation.framework */; };
 		89750A981BC36BA400026E1F /* SRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 89750A591BC36BA400026E1F /* SRWebSocket.m */; };
 		89A2F0011BB982C700FA5B15 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 89A2F0001BB982C700FA5B15 /* main.m */; };
@@ -107,6 +112,11 @@
 		8937A4961BC5976800BB964D /* lose.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = lose.mp3; sourceTree = "<group>"; };
 		896E8C291BBBA05900B89D8A /* 2000px-Pacman.svg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "2000px-Pacman.svg.png"; sourceTree = "<group>"; };
 		896E8C2D1BBBAA6800B89D8A /* monster.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = monster.jpeg; sourceTree = "<group>"; };
+		8973FECE1BC5CAD4006893DD /* pac_se_ghost_turn2blue.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pac_se_ghost_turn2blue.wav; sourceTree = "<group>"; };
+		8973FED01BC5CC0C006893DD /* pac_se_ghost_movesound.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = pac_se_ghost_movesound.wav; sourceTree = "<group>"; };
+		8973FED21BC5D1EE006893DD /* pac_music_gamestart.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = pac_music_gamestart.wav; path = ../../../../../Downloads/file_20151008020431/pac_music_gamestart.wav; sourceTree = "<group>"; };
+		8973FED41BC5D34E006893DD /* pac_se_eating_fruit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = pac_se_eating_fruit.wav; path = ../../../../../Downloads/file_20151008020431/pac_se_eating_fruit.wav; sourceTree = "<group>"; };
+		8973FED61BC5D498006893DD /* pac_se_credit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = pac_se_credit.wav; path = ../../../../../Downloads/file_20151008020431/pac_se_credit.wav; sourceTree = "<group>"; };
 		8975050F1BC3173C00026E1F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		89750A571BC36BA400026E1F /* SocketRocket-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "SocketRocket-Prefix.pch"; sourceTree = "<group>"; };
 		89750A581BC36BA400026E1F /* SRWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SRWebSocket.h; sourceTree = "<group>"; };
@@ -321,6 +331,11 @@
 				89A2F0361BB9C04E00FA5B15 /* blank.gif */,
 				896E8C291BBBA05900B89D8A /* 2000px-Pacman.svg.png */,
 				896E8C2D1BBBAA6800B89D8A /* monster.jpeg */,
+				8973FED61BC5D498006893DD /* pac_se_credit.wav */,
+				8973FED41BC5D34E006893DD /* pac_se_eating_fruit.wav */,
+				8973FED21BC5D1EE006893DD /* pac_music_gamestart.wav */,
+				8973FED01BC5CC0C006893DD /* pac_se_ghost_movesound.wav */,
+				8973FECE1BC5CAD4006893DD /* pac_se_ghost_turn2blue.wav */,
 				8937A4961BC5976800BB964D /* lose.mp3 */,
 				89A2F00B1BB982C700FA5B15 /* Assets.xcassets */,
 				89A2F00D1BB982C700FA5B15 /* LaunchScreen.storyboard */,
@@ -469,11 +484,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				89A2F00F1BB982C700FA5B15 /* LaunchScreen.storyboard in Resources */,
+				8973FECF1BC5CAD4006893DD /* pac_se_ghost_turn2blue.wav in Resources */,
+				8973FED11BC5CC0C006893DD /* pac_se_ghost_movesound.wav in Resources */,
+				8973FED71BC5D498006893DD /* pac_se_credit.wav in Resources */,
 				89D90A6E1BC40D8C00E4B387 /* TwitterKitResources.bundle in Resources */,
 				8937A4971BC5976800BB964D /* lose.mp3 in Resources */,
 				896E8C2A1BBBA05900B89D8A /* 2000px-Pacman.svg.png in Resources */,
+				8973FED51BC5D34E006893DD /* pac_se_eating_fruit.wav in Resources */,
 				89A2F0371BB9C04E00FA5B15 /* blank.gif in Resources */,
 				89A2F00C1BB982C700FA5B15 /* Assets.xcassets in Resources */,
+				8973FED31BC5D1EE006893DD /* pac_music_gamestart.wav in Resources */,
 				896E8C2E1BBBAA6800B89D8A /* monster.jpeg in Resources */,
 				89A2F00A1BB982C700FA5B15 /* Main.storyboard in Resources */,
 			);
