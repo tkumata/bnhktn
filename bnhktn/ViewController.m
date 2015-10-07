@@ -44,6 +44,7 @@
     int contScore, confPower;
     
     SRWebSocket *web_socket;
+    BOOL socketOpen;
     
     NSMutableDictionary *_dictPlayers;
 }
@@ -94,6 +95,7 @@
 
     // Global
     norepeatFlag = 0;
+    socketOpen = NO;
     
     // Konashi init
     [Konashi initialize];
@@ -470,18 +472,20 @@
     self.labelLastLocation.text = [NSString stringWithFormat:@"@%f, %f, %f", mylatitude, mylongitude, mydirection];
     
     // Make JSON and send location to node.js server
-    if (segmentRole.selectedSegmentIndex == 0) {
-        // case pac-man
-        NSString* json = [NSString stringWithFormat:@"{\"enemyLat\":%f,\"enemyLng\":%f,\"playerLat\":%f,\"playerLng\":%f,\"playerDir\":%f,\"nextCookieLat\":%f,\"nextCookieLng\":%f}", 0.0, 0.0, mylatitude, mylongitude, mydirection, 0.0, 0.0];
-        NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
-//    NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
-        [web_socket send:data];
-    } else {
-        // case monster
-        NSString* json = [NSString stringWithFormat:@"{\"enemyLat\":\"%f\",\"enemyLng\":\"%f\",\"playerLat\":\"%f\",\"playerLng\":\"%f\",\"playerDir\":\"%f\",\"nextCookieLat\":%f,\"nextCookieLng\":%f}", mylatitude, mylongitude, 0.0f, 0.0f, mydirection, 0.0f, 0.0f];
-        NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
-//    NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
-        [web_socket send:data];
+    if (socketOpen) {
+        if (segmentRole.selectedSegmentIndex == 0) {
+            // case pac-man
+            NSString* json = [NSString stringWithFormat:@"{\"enemyLat\":%f,\"enemyLng\":%f,\"playerLat\":%f,\"playerLng\":%f,\"playerDir\":%f,\"nextCookieLat\":%f,\"nextCookieLng\":%f}", 0.0, 0.0, mylatitude, mylongitude, mydirection, 0.0, 0.0];
+            NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
+            //    NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+            [web_socket send:data];
+        } else {
+            // case monster
+            NSString* json = [NSString stringWithFormat:@"{\"enemyLat\":\"%f\",\"enemyLng\":\"%f\",\"playerLat\":\"%f\",\"playerLng\":\"%f\",\"playerDir\":\"%f\",\"nextCookieLat\":%f,\"nextCookieLng\":%f}", mylatitude, mylongitude, 0.0f, 0.0f, mydirection, 0.0f, 0.0f];
+            NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
+            //    NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+            [web_socket send:data];
+        }
     }
     
     /* HTTP POST BEGIN */
@@ -591,6 +595,7 @@
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
 //    [webSocket send:@"{\"id\":\"1\",\"item\":\"hogehoge\"}"];
+    socketOpen = YES;
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
@@ -621,6 +626,12 @@
     [ud setDouble:confCookieLat forKey:@"cookieLat"];
     [ud setDouble:confCookieLng forKey:@"cookieLon"];
     [ud synchronize];
+}
+
+- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code
+           reason:(NSString *)reason
+         wasClean:(BOOL)wasClean; {
+    socketOpen = NO;
 }
 
 - (void)playSound:(NSString *)soundName {
