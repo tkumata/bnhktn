@@ -14,10 +14,16 @@
  * PIO2 ... Touch as changing role to monster.
  * PIO3 ... Vib when pac-man get powerball when role is monster.
  *
+ *
  * Location JSON format
+ *
  * myLat:%f
  * myLon:%f
  * myDir:%f
+ *
+ *
+ * confPacman ... 0 is pac-man, 1 is monster
+ *
  */
 
 #import "ViewController.h"
@@ -39,7 +45,7 @@
     UIImageView *img2View;
     
     BOOL confPacman;
-    float confMyLat, confMyLon, confMyAlt, confMyDir, targetLat, targetLon;
+    float confMyLat, confMyLon, confMyAlt, confMyDir, confTargetLat, confTargetLon, confCookieLat, confCookieLng;
     int contScore, confPower;
     
     SRWebSocket *web_socket;
@@ -64,7 +70,7 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    // User Default
+    // User Defaults
     NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
     NSMutableDictionary *defaults = [NSMutableDictionary dictionary];
     [defaults setObject:@"YES" forKey:@"isPacman"];
@@ -76,6 +82,8 @@
     [defaults setObject:@"0" forKey:@"score"];
     [defaults setObject:@"0" forKey:@"power"];
     [defaults setObject:@"0" forKey:@"myDir"];
+    [defaults setObject:@"0" forKey:@"cookieLat"];
+    [defaults setObject:@"0" forKey:@"cookieLng"];
     [ud registerDefaults:defaults];
     
     // Read setting file
@@ -462,13 +470,20 @@
     [ud synchronize];
     self.labelLastLocation.text = [NSString stringWithFormat:@"@%f, %f, %f", mylatitude, mylongitude, mydirection];
     
-    // Make json
-    NSString* json = [NSString stringWithFormat:@"{\"myLat\":%f, \"myLon\":%f, \"myDir\":%f}", mylatitude, mylongitude, mydirection];
-    NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
+    // Make JSON and send location to node.js server
+    if (segmentRole.selectedSegmentIndex == 0) {
+        // case pac-man
+        NSString* json = [NSString stringWithFormat:@"{\"playerLat\":%f, \"playerLng\":%f, \"playerDir\":%f}", mylatitude, mylongitude, mydirection];
+        NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
 //    NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
-    
-    // Send Location by WebSocket.io
-    [web_socket send:data];
+        [web_socket send:data];
+    } else {
+        // case monster
+        NSString* json = [NSString stringWithFormat:@"{\"enemyLat\":%f, \"enemyLng\":%f}", mylatitude, mylongitude];
+        NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
+//    NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+        [web_socket send:data];
+    }
     
     /* HTTP POST BEGIN */
     // POST my location
@@ -563,24 +578,49 @@
 
 - (void)shortcutBeacon {
     // HTTP GET Method
-    NSURL *url = [NSURL URLWithString:@"https://www.google.co.jp/"];
-    NSData *data = [NSData dataWithContentsOfURL:url];
-    NSString *ret = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    NSLog(@"ret=%@", ret);
-    
-    NSURLRequest *nsrequest = [NSURLRequest requestWithURL:url];
-    
-    [webView loadRequest:nsrequest];
-    [self.view addSubview:webView];
+//    NSURL *url = [NSURL URLWithString:@"https://www.google.co.jp/"];
+//    NSData *data = [NSData dataWithContentsOfURL:url];
+//    NSString *ret = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+//    NSLog(@"ret=%@", ret);
+//    
+//    NSURLRequest *nsrequest = [NSURLRequest requestWithURL:url];
+//    
+//    [webView loadRequest:nsrequest];
+//    [self.view addSubview:webView];
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
-//    [webSocket send:@"{\"id\":\"1\"}"];
-    [webSocket send:@"{\"id\":\"1\",\"item\":\"hogehoge\"}"];
+//    [webSocket send:@"{\"id\":\"1\",\"item\":\"hogehoge\"}"];
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-    NSLog(@"didReceiveMessage: %@", [message description]);
+//    NSLog(@"didReceiveMessage: %@", [message description]);
+    
+    // JSON parse
+    NSArray *array = [NSJSONSerialization JSONObjectWithData:message options:NSJSONReadingAllowFragments error:nil];
+    
+    //
+    if (segmentRole.selectedSegmentIndex == 0) {
+        // case Pac-man
+        confTargetLat = [[array valueForKeyPath:@"enemyLat"] floatValue];
+        confTargetLon = [[array valueForKeyPath:@"enemyLng"] floatValue];
+        confCookieLat = [[array valueForKeyPath:@"nextCookieLat"] floatValue];
+        confCookieLng = [[array valueForKeyPath:@"nextCookieLng"] floatValue];
+    } else {
+        // case Monster
+        confTargetLat = [[array valueForKeyPath:@"playerLat"] floatValue];
+        confTargetLon = [[array valueForKeyPath:@"playerLng"] floatValue];
+        confCookieLat = [[array valueForKeyPath:@"nextCookieLat"] floatValue];
+        confCookieLng = [[array valueForKeyPath:@"nextCookieLng"] floatValue];
+    }
+    
+    // Save location to user defaults
+    NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+    [ud setDouble:confTargetLat forKey:@"targetLat"];
+    [ud setDouble:confTargetLon forKey:@"targetLon"];
+    [ud setDouble:confCookieLat forKey:@"cookieLat"];
+    [ud setDouble:confCookieLng forKey:@"cookieLon"];
+    [ud synchronize];
 }
 
 //- (void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading {
@@ -596,10 +636,13 @@ float CalculateAngle(float nLat1, float nLon1, float nLat2, float nLon2) {
     float Y = cos(nLon2 * M_PI / 180) * sin(nLat2 * M_PI / 180 - nLat1 * M_PI / 180);
     float X = cos(nLon1 * M_PI / 180) * sin(nLon2 * M_PI / 180) - sin(nLon1 * M_PI / 180) * cos(nLon2 * M_PI / 180) * cos(nLat2 * M_PI / 180 - nLat1 * M_PI / 180);
     float dirE0 = 180 * atan2(Y, X) / M_PI;
+    
     if (dirE0 < 0) {
         dirE0 = dirE0 + 360;
     }
+    
     float dirN0 = fmod((dirE0+90), 360);
+    
     return dirN0;
 }
 
