@@ -15,12 +15,7 @@
  * PIO3 ... Vib when pac-man get powerball when role is monster.
  *
  *
- * Location JSON format
- *
- * myLat:%f
- * myLon:%f
- * myDir:%f
- *
+ * Variable
  *
  * confPacman ... 0 is pac-man, 1 is monster
  *
@@ -31,8 +26,8 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import "Konashi.h"
 #import <CoreMotion/CoreMotion.h>
-#import <AVFoundation/AVFoundation.h>
 #import "SRWebSocket.h"
+#import <AVFoundation/AVFoundation.h>
 
 @interface ViewController () <CLLocationManagerDelegate, CBCentralManagerDelegate>
 {
@@ -49,6 +44,8 @@
     int contScore, confPower;
     
     SRWebSocket *web_socket;
+    
+    NSMutableDictionary *_dictPlayers;
 }
 @property (weak, nonatomic) IBOutlet UILabel *labelRange;
 @property (weak, nonatomic) IBOutlet UILabel *labelRSSI;
@@ -60,6 +57,8 @@
 @property (nonatomic) NSUUID *proximityUUID;
 @property (nonatomic) CLBeaconRegion *beaconRegion;
 @property (nonatomic) CBCentralManager *bluetoothManager;
+
+@property (strong, nonatomic) AVAudioPlayer *player;
 
 @end
 
@@ -110,7 +109,7 @@
     }];
     
     [[Konashi shared] setDigitalInputDidChangeValueHandler:^(KonashiDigitalIOPin pin, int value) {
-        if ([Konashi digitalRead:KonashiDigitalIO1]) {
+        if ([Konashi digitalRead:KonashiDigitalIO1] && value == 1) {
             [self readRole];
         }
         
@@ -519,7 +518,7 @@
         segmentRole.selectedSegmentIndex = 0;
         
         NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-        [ud setBool:1 forKey:@"isPacman"];
+        [ud setBool:0 forKey:@"isPacman"];
         [ud synchronize];
         
         [Konashi pinMode:KonashiDigitalIO0 mode:KonashiPinModeOutput]; // set PIO0 LED
@@ -533,7 +532,7 @@
         segmentRole.selectedSegmentIndex = 1;
         
         NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-        [ud setBool:0 forKey:@"isPacman"];
+        [ud setBool:1 forKey:@"isPacman"];
         [ud synchronize];
         
         [Konashi pinMode:KonashiDigitalIO0 mode:KonashiPinModeOutput]; // set PIO0 LED
@@ -573,6 +572,7 @@
         // role is monster
         [Konashi pinMode:KonashiDigitalIO3 mode:KonashiPinModeOutput]; // set PIO3 Vib
         [Konashi digitalWrite:KonashiDigitalIO3 value:KonashiLevelHigh];
+        [self playSound:@"lose.mp3"];
     }
 }
 
@@ -594,10 +594,10 @@
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-//    NSLog(@"didReceiveMessage: %@", [message description]);
+    NSLog(@"didReceiveMessage: %@", [message description]);
     
     // JSON parse
-    NSArray *array = [NSJSONSerialization JSONObjectWithData:message options:NSJSONReadingAllowFragments error:nil];
+    NSArray *array = message;
     
     //
     if (segmentRole.selectedSegmentIndex == 0) {
@@ -621,6 +621,23 @@
     [ud setDouble:confCookieLat forKey:@"cookieLat"];
     [ud setDouble:confCookieLng forKey:@"cookieLon"];
     [ud synchronize];
+}
+
+- (void)playSound:(NSString *)soundName {
+    NSString *soundPath = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:soundName];
+    NSURL *urlOfSound = [NSURL fileURLWithPath:soundPath];
+    AVAudioPlayer *player = [[AVAudioPlayer alloc] initWithContentsOfURL:urlOfSound error:nil];
+    [player setNumberOfLoops:0];
+    player.delegate = (id)self;
+    [player prepareToPlay];
+    if (_dictPlayers == nil)
+        _dictPlayers = [NSMutableDictionary dictionary];
+    [_dictPlayers setObject:player forKey:[[player.url path] lastPathComponent]];
+    [player play];
+}
+
+-(void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
+    [_dictPlayers removeObjectForKey:[[player.url path] lastPathComponent]];
 }
 
 //- (void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading {
