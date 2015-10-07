@@ -472,13 +472,13 @@
     // Make JSON and send location to node.js server
     if (segmentRole.selectedSegmentIndex == 0) {
         // case pac-man
-        NSString* json = [NSString stringWithFormat:@"{\"playerLat\":%f, \"playerLng\":%f, \"playerDir\":%f}", mylatitude, mylongitude, mydirection];
+        NSString* json = [NSString stringWithFormat:@"{\"enemyLat\":%f,\"enemyLng\":%f,\"playerLat\":%f,\"playerLng\":%f,\"playerDir\":%f,\"nextCookieLat\":%f,\"nextCookieLng\":%f}", 0.0, 0.0, mylatitude, mylongitude, mydirection, 0.0, 0.0];
         NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
 //    NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
         [web_socket send:data];
     } else {
         // case monster
-        NSString* json = [NSString stringWithFormat:@"{\"enemyLat\":%f, \"enemyLng\":%f}", mylatitude, mylongitude];
+        NSString* json = [NSString stringWithFormat:@"{\"enemyLat\":\"%f\",\"enemyLng\":\"%f\",\"playerLat\":\"%f\",\"playerLng\":\"%f\",\"playerDir\":\"%f\",\"nextCookieLat\":%f,\"nextCookieLng\":%f}", mylatitude, mylongitude, 0.0f, 0.0f, mydirection, 0.0f, 0.0f];
         NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
 //    NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
         [web_socket send:data];
@@ -594,24 +594,24 @@
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-    NSLog(@"didReceiveMessage: %@", [message description]);
-    
+//    NSLog(@"didReceiveMessage: %@", [message description]);
+    NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
     // JSON parse
-    NSArray *array = message;
+    NSDictionary *array = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];;
     
     //
     if (segmentRole.selectedSegmentIndex == 0) {
         // case Pac-man
-        confTargetLat = [[array valueForKeyPath:@"enemyLat"] floatValue];
-        confTargetLon = [[array valueForKeyPath:@"enemyLng"] floatValue];
-        confCookieLat = [[array valueForKeyPath:@"nextCookieLat"] floatValue];
-        confCookieLng = [[array valueForKeyPath:@"nextCookieLng"] floatValue];
+        confTargetLat = [[array objectForKey:@"enemyLat"] floatValue];
+        confTargetLon = [[array objectForKey:@"enemyLng"] floatValue];
+        confCookieLat = [[array objectForKey:@"nextCookieLat"] floatValue];
+        confCookieLng = [[array objectForKey:@"nextCookieLng"] floatValue];
     } else {
         // case Monster
-        confTargetLat = [[array valueForKeyPath:@"playerLat"] floatValue];
-        confTargetLon = [[array valueForKeyPath:@"playerLng"] floatValue];
-        confCookieLat = [[array valueForKeyPath:@"nextCookieLat"] floatValue];
-        confCookieLng = [[array valueForKeyPath:@"nextCookieLng"] floatValue];
+        confTargetLat = [[array objectForKey:@"playerLat"] floatValue];
+        confTargetLon = [[array objectForKey:@"playerLng"] floatValue];
+        confCookieLat = [[array objectForKey:@"nextCookieLat"] floatValue];
+        confCookieLng = [[array objectForKey:@"nextCookieLng"] floatValue];
     }
     
     // Save location to user defaults
