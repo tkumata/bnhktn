@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		892664301BC606720093D563 /* pac_se_ghost_movesound.wav in Resources */ = {isa = PBXBuildFile; fileRef = 8926642F1BC606720093D563 /* pac_se_ghost_movesound.wav */; };
 		89352B771BBAF716002FD4AB /* CBPeripheral+Konashi.m in Sources */ = {isa = PBXBuildFile; fileRef = 89352B501BBAF716002FD4AB /* CBPeripheral+Konashi.m */; };
 		89352B781BBAF716002FD4AB /* CBService+Konashi.m in Sources */ = {isa = PBXBuildFile; fileRef = 89352B521BBAF716002FD4AB /* CBService+Konashi.m */; };
 		89352B791BBAF716002FD4AB /* CBUUID+Konashi.m in Sources */ = {isa = PBXBuildFile; fileRef = 89352B541BBAF716002FD4AB /* CBUUID+Konashi.m */; };
@@ -72,6 +73,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		8926642F1BC606720093D563 /* pac_se_ghost_movesound.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = pac_se_ghost_movesound.wav; path = ../../../../../Downloads/file_20151008020431/pac_se_ghost_movesound.wav; sourceTree = "<group>"; };
 		89352B4F1BBAF716002FD4AB /* CBPeripheral+Konashi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CBPeripheral+Konashi.h"; sourceTree = "<group>"; };
 		89352B501BBAF716002FD4AB /* CBPeripheral+Konashi.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CBPeripheral+Konashi.m"; sourceTree = "<group>"; };
 		89352B511BBAF716002FD4AB /* CBService+Konashi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CBService+Konashi.h"; sourceTree = "<group>"; };
@@ -331,6 +333,7 @@
 				89A2F0361BB9C04E00FA5B15 /* blank.gif */,
 				896E8C291BBBA05900B89D8A /* 2000px-Pacman.svg.png */,
 				896E8C2D1BBBAA6800B89D8A /* monster.jpeg */,
+				8926642F1BC606720093D563 /* pac_se_ghost_movesound.wav */,
 				8973FED61BC5D498006893DD /* pac_se_credit.wav */,
 				8973FED41BC5D34E006893DD /* pac_se_eating_fruit.wav */,
 				8973FED21BC5D1EE006893DD /* pac_music_gamestart.wav */,
@@ -495,6 +498,7 @@
 				89A2F00C1BB982C700FA5B15 /* Assets.xcassets in Resources */,
 				8973FED31BC5D1EE006893DD /* pac_music_gamestart.wav in Resources */,
 				896E8C2E1BBBAA6800B89D8A /* monster.jpeg in Resources */,
+				892664301BC606720093D563 /* pac_se_ghost_movesound.wav in Resources */,
 				89A2F00A1BB982C700FA5B15 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

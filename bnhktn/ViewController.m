@@ -106,23 +106,35 @@
     // Konashi Event Handler
     [[Konashi shared] setReadyHandler:^{
         NSLog(@"Konashi Ready");
+        
+        // BGM?
+//        [self playSound:@"pac_se_ghost_movesound.wav" loop:-1];
+
         if (segmentRole.selectedSegmentIndex == 0) {
             [Konashi pinMode:KonashiDigitalIO0 mode:KonashiPinModeOutput]; // set PIO0 LED
             [Konashi digitalWrite:KonashiDigitalIO0 value:KonashiLevelHigh];
         }
-//        [self shortcutBeacon];
+        
+        // Open Socket.IO
+        web_socket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"ws://192.168.3.2:8888"]]];
+        [web_socket setDelegate:self];
+        [web_socket open];
     }];
     
     [[Konashi shared] setDigitalInputDidChangeValueHandler:^(KonashiDigitalIOPin pin, int value) {
+        // Change role whne push switch on gadget.
         if ([Konashi digitalRead:KonashiDigitalIO1] && value == 1) {
             [self readRole];
         }
-        
-        if ([Konashi digitalRead:KonashiDigitalIO2]) {
-            [Konashi pinMode:KonashiDigitalIO3 mode:KonashiPinModeOutput]; // set PIO3 Vib
-            [Konashi digitalWrite:KonashiDigitalIO3 value:KonashiLevelLow];
+        if ([Konashi digitalRead:KonashiDigitalIO1] && value == 0) {
             [self readRole2];
         }
+        
+//        if ([Konashi digitalRead:KonashiDigitalIO2]) {
+//            [Konashi pinMode:KonashiDigitalIO3 mode:KonashiPinModeOutput]; // set PIO3 Vib
+//            [Konashi digitalWrite:KonashiDigitalIO3 value:KonashiLevelLow];
+//            [self readRole2];
+//        }
     }];
 
     // Sound settings
@@ -194,11 +206,6 @@
             [self.locationManager setDesiredAccuracy:kCLLocationAccuracyBest];
         }
     }
-    
-    // Open Socket.IO
-    web_socket = [[SRWebSocket alloc] initWithURLRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:@"ws://192.168.3.2:8888"]]];
-    [web_socket setDelegate:self];
-    [web_socket open];
     
     // Motion Manager
 //    self.motionManager = [[CMMotionManager alloc] init];
@@ -370,19 +377,18 @@
 }
 
 - (IBAction)postGeo:(id)sender {
-    // reserve func
 }
 
 - (IBAction)getRole:(id)sender {
-    // reserve func
+}
+
+- (IBAction)getRole2:(id)sender {
 }
 
 - (IBAction)pacmanItem:(id)sender {
-    // reserve func
 }
 
 - (IBAction)accessServer:(id)sender {
-    // reserve func
 }
 
 - (IBAction)showQuestionAction:(id)sender {
@@ -403,6 +409,10 @@
         
         case 4:
             [self shortcutBeacon];
+            break;
+            
+        case 5:
+            [self readRole2];
             break;
         
         default:
@@ -472,19 +482,40 @@
 //    [ud setDouble:altitude forKey:@"myAlt"];
     [ud setDouble:mydirection forKey:@"myDir"];
     [ud synchronize];
+    
     self.labelLastLocation.text = [NSString stringWithFormat:@"@%f, %f, %f", mylatitude, mylongitude, mydirection];
     
     // Make JSON and send location to node.js server
     if (socketOpen) {
         if (segmentRole.selectedSegmentIndex == 0) {
             // case pac-man
-            NSString* json = [NSString stringWithFormat:@"{\"enemyLat\":%f,\"enemyLng\":%f,\"playerLat\":%f,\"playerLng\":%f,\"playerDir\":%f,\"nextCookieLat\":%f,\"nextCookieLng\":%f}", 0.0, 0.0, mylatitude, mylongitude, mydirection, 0.0, 0.0];
+            NSString* json = [NSString stringWithFormat:@"{\
+                              \"type\":\"%@\",\
+                              \"user\":\"%@\",\
+                              \"enemyLat\":%f,\
+                              \"enemyLng\":%f,\
+                              \"playerLat\":%f,\
+                              \"playerLng\":%f,\
+                              \"playerDir\":%f,\
+                              \"nextCookieLat\":%f,\
+                              \"nextCookieLng\":%f\
+                              }", @"position", @"pacman", 0.0, 0.0, mylatitude, mylongitude, mydirection, 0.0, 0.0];
             NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
             //    NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
             [web_socket send:data];
         } else {
             // case monster
-            NSString* json = [NSString stringWithFormat:@"{\"enemyLat\":\"%f\",\"enemyLng\":\"%f\",\"playerLat\":\"%f\",\"playerLng\":\"%f\",\"playerDir\":\"%f\",\"nextCookieLat\":%f,\"nextCookieLng\":%f}", mylatitude, mylongitude, 0.0f, 0.0f, mydirection, 0.0f, 0.0f];
+            NSString* json = [NSString stringWithFormat:@"{\
+                              \"type\":\"%@\",\
+                              \"user\":\"%@\",\
+                              \"enemyLat\":\"%f\",\
+                              \"enemyLng\":\"%f\",\
+                              \"playerLat\":\"%f\",\
+                              \"playerLng\":\"%f\",\
+                              \"playerDir\":\"%f\",\
+                              \"nextCookieLat\":%f,\
+                              \"nextCookieLng\":%f\
+                              }", @"position", @"monster", mylatitude, mylongitude, 0.0f, 0.0f, mydirection, 0.0f, 0.0f];
             NSData* data = [json dataUsingEncoding:NSUTF8StringEncoding];
             //    NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
             [web_socket send:data];
@@ -520,41 +551,57 @@
 
 - (void)readRole {
     // change to role
-    if (segmentRole.selectedSegmentIndex == 1) {
-        NSLog(@"Change to Pac-man.");
-        segmentRole.selectedSegmentIndex = 0;
-        
-        NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-        [ud setBool:0 forKey:@"isPacman"];
-        [ud synchronize];
-        
-        [Konashi pinMode:KonashiDigitalIO0 mode:KonashiPinModeOutput]; // set PIO0 LED
-        [Konashi digitalWrite:KonashiDigitalIO0 value:KonashiLevelLow];
-        
-        UIImage *pacmanimg0 = [UIImage imageNamed:@"2000px-Pacman.svg.png"];
-        imgView.image = pacmanimg0;
-        [self.view insertSubview:imgView atIndex:0];
-    } else {
-        NSLog(@"Change to Monster.");
-        segmentRole.selectedSegmentIndex = 1;
-        
-        NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
-        [ud setBool:1 forKey:@"isPacman"];
-        [ud synchronize];
-        
-        [Konashi pinMode:KonashiDigitalIO0 mode:KonashiPinModeOutput]; // set PIO0 LED
-        [Konashi digitalWrite:KonashiDigitalIO0 value:KonashiLevelLow];
-        
-        UIImage *pacmanimg0 = [UIImage imageNamed:@"monster.jpeg"];
-        imgView.image = pacmanimg0;
-        [self.view insertSubview:imgView atIndex:0];
-    }
+//    if (segmentRole.selectedSegmentIndex == 1) {
+//        NSLog(@"Change to Pac-man.");
+//        segmentRole.selectedSegmentIndex = 0;
+//        
+//        NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+//        [ud setBool:0 forKey:@"isPacman"];
+//        [ud synchronize];
+//        
+//        [Konashi pinMode:KonashiDigitalIO0 mode:KonashiPinModeOutput]; // set PIO0 LED
+//        [Konashi digitalWrite:KonashiDigitalIO0 value:KonashiLevelLow];
+//        
+//        UIImage *pacmanimg0 = [UIImage imageNamed:@"2000px-Pacman.svg.png"];
+//        imgView.image = pacmanimg0;
+//        [self.view insertSubview:imgView atIndex:0];
+//    } else {
+//        NSLog(@"Change to Monster.");
+//        segmentRole.selectedSegmentIndex = 1;
+//        
+//        NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+//        [ud setBool:1 forKey:@"isPacman"];
+//        [ud synchronize];
+//        
+//        [Konashi pinMode:KonashiDigitalIO0 mode:KonashiPinModeOutput]; // set PIO0 LED
+//        [Konashi digitalWrite:KonashiDigitalIO0 value:KonashiLevelLow];
+//        
+//        UIImage *pacmanimg0 = [UIImage imageNamed:@"monster.jpeg"];
+//        imgView.image = pacmanimg0;
+//        [self.view insertSubview:imgView atIndex:0];
+//    }
+    
+    NSLog(@"Change to Monster.");
+    segmentRole.selectedSegmentIndex = 1;
+    
+    NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
+    [ud setBool:segmentRole.selectedSegmentIndex forKey:@"isPacman"];
+    [ud synchronize];
+    
+    [Konashi pinMode:KonashiDigitalIO0 mode:KonashiPinModeOutput]; // set PIO0 LED
+    [Konashi digitalWrite:KonashiDigitalIO0 value:KonashiLevelLow];
+    
+    UIImage *pacmanimg0 = [UIImage imageNamed:@"monster.jpeg"];
+    imgView.image = pacmanimg0;
+    [self.view insertSubview:imgView atIndex:0];
+    
     [self playSound:@"pac_se_credit.wav" loop:0];
+    [self playSound:@"pac_se_ghost_movesound.wav" loop:10];
 }
 
 - (void)readRole2 {
     // change to role pac-man
-    NSLog(@"I am Pac-man.");
+    NSLog(@"Change to Pac-man.");
     segmentRole.selectedSegmentIndex = 0;
     
     NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
@@ -562,13 +609,13 @@
     [ud synchronize];
     
     [Konashi pinMode:KonashiDigitalIO0 mode:KonashiPinModeOutput]; // set PIO0 LED
-    [Konashi digitalWrite:KonashiDigitalIO0 value:KonashiLevelHigh];
-//    [NSThread sleepForTimeInterval:0.1];
-//    [Konashi digitalWrite:KonashiDigitalIO0 value:KonashiLevelLow];
+    [Konashi digitalWrite:KonashiDigitalIO0 value:KonashiLevelLow];
     
     UIImage *pacmanimg0 = [UIImage imageNamed:@"2000px-Pacman.svg.png"];
     imgView.image = pacmanimg0;
     [self.view insertSubview:imgView atIndex:0];
+    
+    [self playSound:@"pac_se_credit.wav" loop:0];
 }
 
 - (void)pacmanGetItem {
@@ -610,22 +657,34 @@
     NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
     // JSON parse
     NSDictionary *array = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];;
-    
-    //
-    if (segmentRole.selectedSegmentIndex == 0) {
-        // case Pac-man
-        confTargetLat = [[array objectForKey:@"enemyLat"] floatValue];
-        confTargetLon = [[array objectForKey:@"enemyLng"] floatValue];
-        confCookieLat = [[array objectForKey:@"nextCookieLat"] floatValue];
-        confCookieLng = [[array objectForKey:@"nextCookieLng"] floatValue];
-    } else {
-        // case Monster
-        confTargetLat = [[array objectForKey:@"playerLat"] floatValue];
-        confTargetLon = [[array objectForKey:@"playerLng"] floatValue];
-        confCookieLat = [[array objectForKey:@"nextCookieLat"] floatValue];
-        confCookieLng = [[array objectForKey:@"nextCookieLng"] floatValue];
+
+    // type is position
+    if ([[array objectForKey:@"type"] isEqual:@"position"]) {
+        if (segmentRole.selectedSegmentIndex == 0 && [[array objectForKey:@"user"] isEqual:@"monster"]) {
+            // case Pac-man
+            confTargetLat = [[array objectForKey:@"enemyLat"] floatValue];
+            confTargetLon = [[array objectForKey:@"enemyLng"] floatValue];
+        } else if (segmentRole.selectedSegmentIndex == 1 && [[array objectForKey:@"user"] isEqual:@"pacman"]) {
+            // case Monster
+            confTargetLat = [[array objectForKey:@"playerLat"] floatValue];
+            confTargetLon = [[array objectForKey:@"playerLng"] floatValue];
+        } else if (segmentRole.selectedSegmentIndex == 0 && [[array objectForKey:@"user"] isEqual:@"operator"]) {
+            // case Pac-man then JSON which operator send
+            confCookieLat = [[array objectForKey:@"nextCookieLat"] floatValue];
+            confCookieLng = [[array objectForKey:@"nextCookieLng"] floatValue];
+        }
     }
-    
+    // type is power
+    else if ([[array objectForKey:@"type"] isEqual:@"power"])
+    {
+        [self pacmanGetItem];
+    }
+    // type is chat
+    else
+    {
+        // ignore JSON
+    }
+
     // Save location to user defaults
     NSUserDefaults *ud = [NSUserDefaults standardUserDefaults];
     [ud setDouble:confTargetLat forKey:@"targetLat"];

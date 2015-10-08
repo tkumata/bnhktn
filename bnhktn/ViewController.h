@@ -18,6 +18,7 @@
 - (IBAction)findKonashi:(id)sender;
 - (IBAction)postGeo:(id)sender;
 - (IBAction)getRole:(id)sender;
+- (IBAction)getRole2:(id)sender;
 - (IBAction)pacmanItem:(id)sender;
 - (IBAction)accessServer:(id)sender;
 
