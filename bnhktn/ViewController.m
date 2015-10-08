@@ -724,19 +724,28 @@
 //    NSLog(@"%f", heading);
 //}
 
-// CalculateAngle(start, start, target, target)
+// Angle of direction of movement
+// CalculateAngle(startX, startY, targetX, targetY)
 float CalculateAngle(float nLat1, float nLon1, float nLat2, float nLon2) {
-    float Y = cos(nLon2 * M_PI / 180) * sin(nLat2 * M_PI / 180 - nLat1 * M_PI / 180);
-    float X = cos(nLon1 * M_PI / 180) * sin(nLon2 * M_PI / 180) - sin(nLon1 * M_PI / 180) * cos(nLon2 * M_PI / 180) * cos(nLat2 * M_PI / 180 - nLat1 * M_PI / 180);
-    float dirE0 = 180 * atan2(Y, X) / M_PI;
+    // maybe, only northern hemisphere
+    float Y = cos(nLon2) * sin(nLat2 - nLat1);
+    float X = cos(nLon1) * sin(nLon2) - sin(nLon1) * cos(nLon2) * cos(nLat2 - nLat1);
+    float rad = atan2(Y, X);
+    if (rad < 0) rad = rad + 2*M_PI;
+    float deg = rad * 180 / M_PI;
+    return deg;
     
-    if (dirE0 < 0) {
-        dirE0 = dirE0 + 360;
-    }
-    
-    float dirN0 = fmod((dirE0+90), 360);
-    
-    return dirN0;
+//    float Y = cos(nLon2 * M_PI / 180) * sin(nLat2 * M_PI / 180 - nLat1 * M_PI / 180);
+//    float X = cos(nLon1 * M_PI / 180) * sin(nLon2 * M_PI / 180) - sin(nLon1 * M_PI / 180) * cos(nLon2 * M_PI / 180) * cos(nLat2 * M_PI / 180 - nLat1 * M_PI / 180);
+//    float dirE0 = 180 * atan2(Y, X) / M_PI;
+//    
+//    if (dirE0 < 0) {
+//        dirE0 = dirE0 + 360;
+//    }
+//    
+//    float dirN0 = fmod((dirE0+90), 360);
+//    
+//    return dirN0;
 }
 
 
