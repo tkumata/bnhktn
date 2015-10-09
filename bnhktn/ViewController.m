@@ -169,6 +169,7 @@
         imgView = [[UIImageView alloc] initWithFrame:CGRectMake(-70, 300, 200, 200)];
 //        img2View = [[UIImageView alloc] initWithFrame:CGRectMake(250, 300, 200, 200)];
     }
+    imgView.tag = 234;
     
     // role image
     if (confPacman) {
@@ -208,6 +209,24 @@
     }
     
     // Motion Manager
+    if ([CMPedometer isStepCountingAvailable]) {
+        // support pedometer
+        CMPedometer *pedometer = [[CMPedometer alloc] init];
+        [pedometer startPedometerUpdatesFromDate:[NSDate date]
+                                     withHandler:^(CMPedometerData *pedometerData, NSError *error) {
+                                         if (segmentRole.selectedSegmentIndex == 0) {
+                                             // case pac-man
+                                         } else {
+                                             // case monster
+                                             [self playSound:@"pac_se_ghost_movesound.wav" loop:-1];
+                                         }
+        }];
+    }
+    else
+    {
+        // not support pedometer
+        NSLog(@"CMPedometer not supported.");
+    }
 //    self.motionManager = [[CMMotionManager alloc] init];
 //    // DeviceMotion
 //    if ([self.motionManager isDeviceMotionAvailable]) {
@@ -596,7 +615,6 @@
     [self.view insertSubview:imgView atIndex:0];
     
     [self playSound:@"pac_se_credit.wav" loop:0];
-    [self playSound:@"pac_se_ghost_movesound.wav" loop:10];
 }
 
 - (void)readRole2 {
